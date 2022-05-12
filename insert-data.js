@@ -1,4 +1,4 @@
-const { conn } = require ('./connection')
+
 
 const insertData = async(imdb_id, p1, pb1, pb2, title, movie_description, movie_image_link, movie_category, movie_ratings, movie_country, movie_year, movie_sub)=>{
     return new Promise((resolve, reject) => {
