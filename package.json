@@ -1,0 +1,33 @@
+
+{
+  "name": "ziuri-grabber",
+  "version": "1.0.0",
+  "description": "ziuri backned built by oluwayomi timileyin",
+  "main": "index.js",
+  "scripts": {
+    "start": "index.js" 
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Timileyin105/Ziuri-App.git"
+  },
+  "author": "Oluwayomi Timileyin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Timileyin105/Ziuri-App/issues"
+  },
+  "homepage": "https://github.com/Timileyin105/Ziuri-App#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.0",
+    "imdb-api": "^4.4.1", 
+    "mysql": "^2.18.1",
+    "puppeteer": "^13.7.0",
+    "translators": "^1.0.3",
+    "user-agents": "^1.0.1010"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
+
