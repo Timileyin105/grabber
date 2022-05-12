@@ -122,6 +122,8 @@ async function scrapPage(url){
     }, 20000);
 }
 
+console.log('ok')
+
 //   const startCrawller= async()=>{
 //     const browser = await puppeteer.launch();
 //     const crawler = await browser.newPage();
@@ -139,7 +141,7 @@ async function scrapPage(url){
 
 //   startCrawller()
 
-scrapPage('https://45.142.214.18/10254-greitoji-pagalba-online.html')
+// scrapPage('https://45.142.214.18/10254-greitoji-pagalba-online.html')
 
    
 
