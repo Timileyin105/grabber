@@ -249,11 +249,9 @@ var intv = setInterval(async()=>{
     clearInterval(intv)
     clearInterval(lintv)
     console.log('Cloudfare DDoS protection successfully bypassed')
-    // for (let link of movieLink){
-    //   scrapPage(browser, viewport, link)
-    // }
-    scrapPage(browser, viewport, movieLink[0])
-    console.log('arr is', movieLink)
+    for (let link of movieLink){
+      scrapPage(browser, viewport, link)
+    } 
     
   }else{
     console.log('cloudfare blocking connection: reconnecting....', loadingTimout)
