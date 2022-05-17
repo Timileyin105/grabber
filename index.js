@@ -155,7 +155,7 @@ var intv = setInterval(async () => {
             console.log('site datas scraped')
             console.log('getting imdb info')
             let contentTitleEng = await googleTranslator(contentTitle, 'lt', 'en').catch((e)=> console.log('tranlation error probably empty text passed'))
-            let rq =  await imdb.get({name: contentTitleEng}, {apiKey: process.env.IMDB_ID, timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
+            let rq =  await imdb.get({name: contentTitleEng}, {apiKey: '91e97c28', timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
             if(rq == undefined){
               imdb_id = 'not found'
             }else{

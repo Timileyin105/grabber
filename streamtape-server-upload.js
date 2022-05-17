@@ -15,8 +15,8 @@ const upload_streamtape_server = (link) => {
 const streamtape_remote_upload = async (link) =>{
    return new Promise(async (resolve, reject) => {
         try {
-            let login = process.env.STREAMTAPE_API_LOGIN
-            let key = process.env.STREAMTAPE_API_KEY
+            let login = '01754716cdc86092533a'
+            let key = 'OxpMZyjympIZMmK'
             let resp = await  axios.get(`https://api.streamtape.com/remotedl/add?login=${login}&key=${key}&url=${link}`);
             let id = resp.data
             resolve(id)
@@ -30,8 +30,8 @@ const streamtape_get_video_id = async(id)=>{
    return new Promise(async (resolve, reject) => {
        try {
             var intv = setInterval(async () => {
-                let login = process.env.STREAMTAPE_API_LOGIN
-                let key = process.env.STREAMTAPE_API_KEY
+                let login = '01754716cdc86092533a'
+                let key = 'OxpMZyjympIZMmK'
                 let rq = await  axios.get(`https://api.streamtape.com/remotedl/status?login=${login}&key=${key}&id=${id}`);  
                 let raw = rq.data.result
                 for (var i in raw){

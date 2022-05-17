@@ -15,7 +15,7 @@ const upload_streamsb_server = (link) => {
 const streamsb_remote_upload = async (link) =>{
    return new Promise(async (resolve, reject) => {
         try { 
-            let key = process.env.STREAMSB_API_KEY
+            let key = '35231rplyx919qndcmqgu'
             let resp = await  axios.get(`https://api.streamsb.com/api/upload/url?key=${key}&url=${link}`);
             let id = resp.data.result.filecode 
             console.log(id)
@@ -30,7 +30,7 @@ const streamsb_get_video_id = async(id)=>{
    return new Promise(async (resolve, reject) => {
         try {
             var intv = setInterval(async () => {
-                let key = process.env.STREAMSB_API_KEY
+                let key = '35231rplyx919qndcmqgu'
                 let rq = await  axios.get(`https://api.streamsb.com/api/file/direct?key=${key}&file_code=${id}`);  
                 if(rq.data.result){
                     clearInterval(intv)

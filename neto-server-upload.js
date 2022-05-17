@@ -16,7 +16,7 @@ const upload_neto_server = (link) => {
 const neto_remote_upload = async (link) =>{
    return new Promise(async (resolve, reject) => {
         try {
-            let key = process.env.NETU_API_KEY
+            let key = 'da4b99461a0fc9bf0948baddbeb54221'
             let rq = await  axios.get(`https://netu.tv/api/file/remotedl?key=${key}&url=${link}`);
             let raw = rq.data.result.id
             for (var i in raw){
@@ -32,7 +32,7 @@ const neto_get_video_id = async(id)=>{
    return new Promise(async (resolve, reject) => {
        try {
             var intv = setInterval(async () => {
-                let key = process.env.NETU_API_KEY
+                let key = 'da4b99461a0fc9bf0948baddbeb54221'
                 let rq = await  axios.get(`https://netu.tv/api/file/status_remotedl?key=${key}&id=${id}`);  
                 let raw = rq.data.result.files
                 for (var i in raw){
@@ -52,7 +52,7 @@ const neto_get_video_id = async(id)=>{
 const neto_get_embed  = async (video_id)=>{
     return new Promise(async (resolve, reject) => {
         try {
-            let key = process.env.NETU_API_KEY
+            let key = 'da4b99461a0fc9bf0948baddbeb54221'
             let rq = await  axios.get(`https://netu.tv/api/file/embed?key=${key}&file_code=${video_id}`);
             let raw = rq.data.result
             for (var i in raw){
