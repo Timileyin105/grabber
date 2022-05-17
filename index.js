@@ -201,7 +201,7 @@ var intv = setInterval(async () => {
 }
 
 const startCrawller = async()=>{
-  const browser = await puppeteer.launch({headless: false,  args: ['--no-sandbox', '--disable-setuid-sandbox']});
+  const browser = await puppeteer.launch({headless: false, args: ['--no-sandbox']});
   const crawler = await browser.newPage();
   await crawler.setUserAgent('Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
   var cookie = [ // cookie exported by google chrome plugin editthiscookie
