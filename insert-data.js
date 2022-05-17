@@ -1,33 +1,45 @@
 
+const { default: axios } = require("axios")
 
-const insertData = async(imdb_id, p1, pb1, pb2, title, movie_description, movie_image_link, movie_category, movie_ratings, movie_country, movie_year, movie_sub)=>{
-    return new Promise((resolve, reject) => {
+const insertData = async (imdb_id, p1, pb1, pb2, title, movie_description, movie_image_link, movie_category, movie_ratings, movie_country, movie_year, movie_sub)=>{
+    return new Promise(async (resolve, reject) => {
         try {
-            if(p1 == '' || pb1 == '' || pb2 == '' || title == '' || movie_description == '' || movie_image_link == '' || movie_category == '' || movie_ratings == '' || movie_country == '' || movie_year == '' || movie_sub == ''){
-                resolve('incomplete params')
+            if(p1 == '' || pb1 == '' || pb2 == '' || title == '' || movie_description == '' || movie_image_link == '' || movie_category == '' || movie_country == '' || movie_year == ''){
+                resolve('incomplete parameters to upload to ziuir process..failed')
             }else{
-                let =  sql  = `INSERT INTO movies (imdb_id, private_movie_link, public_movie_link, public_movie_link2, movie_title, movie_description, movie_image_link, type, movie_category, imdb_ratings, movie_country, movie_year, movie_subtitle) VALUES ('${imdb_id}','${p1}', '${pb1}', '${pb2}', '${title}', '${movie_description}', '${movie_image_link}', 'movie', '${movie_category}', '${movie_ratings}', '${movie_country}', '${movie_year}', '${movie_sub}')`
-                conn.query(sql)
-                resolve('done')
+                let rq = await axios({
+                    method: "post",
+                    url:"https://ziuri.xyz/grabber/upload-movie",
+                    data: { imdb_id: imdb_id, p1 : p1, pb1 : pb1, pb2 : pb2, title : title, movie_description : movie_description, movie_image_link : movie_image_link, movie_category : movie_category, movie_ratings: movie_ratings, movie_country: movie_country, movie_year : movie_year, movie_sub: movie_sub },
+                    headers: { "Content-Type": "application/json" }
+                })
+
+                let response = rq.data.resp
+                resolve(response)
             }
+
         } catch (error) { 
-            throw error
+            resolve('error checking if content exist: proccess..failed')
         }
     })
 }
 
-const checkIsNotDuplicate = (title)=>{
-    return new Promise((resolve, reject)=>{
+const checkIsNotDuplicate = async (title)=>{
+    return new Promise(async (resolve, reject)=>{
         try {
             if(title == '' || title == undefined){
                 resolve(false)
+
             }else{
-                let sql = `SELECT * FROM movies WHERE movie_title == ${movie_title}`
-                conn.query(sql, (err, arr)=>{
-                    if(err) resolve(false)
-                    else if (arr.lentgh > 0 )  resolve(false)
-                    else return resolve(true)
-                })
+                let rq = await axios({
+                    method: "post",
+                    url:"https://ziuri.xyz/grabber/check-movie-exist",
+                    data: { title : title },
+                    headers: { "Content-Type": "application/json" }
+                }).catch((e)=> console.log('err checking with axios'))
+
+                let response = rq.data.resp
+                resolve(response)
             }
         } catch (error) {
             

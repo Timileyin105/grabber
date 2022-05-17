@@ -18,7 +18,7 @@ const streamtape_remote_upload = async (link) =>{
             let login = process.env.STREAMTAPE_API_LOGIN
             let key = process.env.STREAMTAPE_API_KEY
             let resp = await  axios.get(`https://api.streamtape.com/remotedl/add?login=${login}&key=${key}&url=${link}`);
-            let id = resp.data.result.id
+            let id = resp.data
             resolve(id)
         } catch (error) {
             throw error

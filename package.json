@@ -2,9 +2,9 @@
   "name": "ziuri-grabber",
   "version": "1.0.0",
   "description": "ziuri backned built by oluwayomi timileyin",
-  "main": "index.js",
+  "main": "nodemon index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "index.js"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,11 @@
     "imdb-api": "^4.4.1",
     "mysql": "^2.18.1",
     "npm": "^8.10.0",
+    "proxy-chain": "^2.0.1",
     "puppeteer": "^13.7.0",
+    "puppeteer-extra": "^3.2.3",
+    "puppeteer-extra-plugin-stealth": "^2.9.0",
+    "random-useragent": "^0.5.0",
     "translators": "^1.0.3",
     "user-agents": "^1.0.1010"
   },

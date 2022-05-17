@@ -1,151 +1,273 @@
 
-const puppeteer = require('puppeteer');
-const fs = require("fs/promises");
-const path = require("path");
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { upload_neto_server } = require ('./neto-server-upload')
 const { upload_streamtape_server } = require ('./streamtape-server-upload')
 const { upload_streamsb_server } = require('./streamsb-server-upload')
 const { insertData, checkIsNotDuplicate } = require('./insert-data')
-const imdb = require('imdb-api')
 const { googleTranslator } = require('translators');
+const imdb = require('imdb-api')
+puppeteer.use(StealthPlugin());
+const env = require('dotenv')
+env.config({ path: './.env'})
 
-
-async function scrapPage(url){
-
-    var netuLink
-    var youtubeLink
-    var contentTitle
-    var contentDescription
-    var contentImage
-    var contentLanguage
-    var contentYear
-    var contentRating
-    var contentGenre
-    var contentCountry
-    var pb1
-    var pb2
-    var pb1
-    var imdb_id
-        
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(url,{ waitUntil: 'networkidle2' });
-
-    setTimeout(async() => {
-        
-        await page.screenshot({ path: 'screen.jpg', fullPage: true})
-
-        console.log('page loaded')
-        const iframes = await page.$$eval('iframe', (el)=>{
-            return el.map(el => el.getAttribute('data-src'));
-        }).catch((e)=>{ console.log(e) })
-        console.log('iframe mapped')
-
-
-        contentTitle  = await page.evaluate(()=>{
-           return  document.querySelector(".page__header > h1").textContent
-        }).catch((e)=>{ console.log(e) })
-
-        contentRating  = await page.evaluate(()=>{
-            return  document.querySelector("div.card__rating-ext.imdb").textContent
-        }).catch((e)=>{ console.log(e) })
-        console.log('iframe decription scraped')
-
-
-        contentDescription = await page.evaluate(()=>{
-            return  document.querySelector("div.page__text.full-text").textContent
-        }).catch((e)=>{ console.log(e) })
-
-
-        contentLanguage = await page.evaluate(()=>{
-            return  document.querySelector("#dle-content > article > div.page__subcols.d-flex > div.page__subcol-main.flex-grow-1.d-flex.fd-column > ul > li:nth-child(2) > div.line-clamp > a").textContent
-        }).catch((e)=>{ console.log(e) })
+async function scrapPage(browser, viewport, url){
+  var contentTitle
+  var contentDescription
+  var contentImage
+  var contentLanguage
+  var contentYear
+  var contentRating
+  var contentGenre
+  var contentCountry
+  var pb1
+  var pb2
+  var pb1
+  var imdb_id
+  var movLink 
+  
+  const page = await browser.newPage();
+  await page.setUserAgent('Mozilla/5.0 (contentCountryWindows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
+  var cookie = [ // cookie exported by google chrome plugin editthiscookie
+  {
+    "domain": "filmux.info",
+    "hostOnly": false,
+    "httpOnly": true,
+    "name": "PHPSESSID",
+    "path": "/",
+    "sameSite": "no_restriction",
+    "secure": false,
+    "session": false,
+    "storeId": "0",
+    "value": "ac5c1spa7qclfh3ri3lgv682u5",
+    "id": 1
+  }
+] 
+await page.setViewport(viewport);
+await page.setCookie(...cookie)
+await page.goto(url,{ waitUntil: 'networkidle2' });  
+page.waitForNavigation({ waitUntil: 'networkidle0' })
+var loadingTimout = 0
+var intv = setInterval(async () => {
+  loadingTimout ++ 
+  var iframes = []
+  
+  let iframesCollector = await page.$eval('#dle-content', (el)=>{
+    if(el != null || el != undefined) return { key : 'cool'}
+  }).catch((e)=>{ console.log('clouldfare blcking scrapping could not detet content reconnecting..') })
+  
+  if(iframesCollector != undefined || iframesCollector != null) iframes = iframesCollector
+  
+  if(iframes.length != 0){
+    clearInterval(intv)
+    loadingTimout = 0
+    console.log('Cloudfare DDoS protection successfully bypassed')
     
-
-        let imgLink = await page.evaluate(async ()=>{
-            let link = document.querySelector("div.pmovie__poster > img").getAttribute('src') 
-            return 'https://45.142.214.18' + link
-        }).catch((e)=>{ console.log(e) })
-
+    contentTitle  = await page.evaluate(()=>{
+      return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > h1").textContent
+    }).catch((e)=>{ console.log('cannot read title') })
     
-        contentYear = await page.evaluate(()=>{
-            return  document.querySelector("#dle-content > article > div.page__subcols.d-flex > div.page__subcol-main.flex-grow-1.d-flex.fd-column > ul > li:nth-child(1) > div.line-clamp > a").textContent
-        }).catch((e)=>{ console.log(e) })
-
+    contentRating  = await page.evaluate(()=>{
+      let cn = document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(9)").textContent
+      let cnArr =  cn.split(':')
+      return cnArr[1].replace('(balsų', '')
+    }).catch((e)=>{ console.log('could not get title') })
     
-        contentGenre = await page.evaluate(()=>{
-            return  document.querySelector("#dle-content > article > div.page__subcols.d-flex > div.page__subcol-main.flex-grow-1.d-flex.fd-column > ul > li:nth-child(3) > div.line-clamp").textContent
-        }).catch((e)=>{ console.log(e) })
-
     
-        for (const videoLink of iframes){
-            if(videoLink == null || undefined){
-                continue
-            }else{
-                if (videoLink.includes("waaw.to")) {
-                    netuLink = videoLink
-                }else if(videoLink.includes("youtube.com")){
-                    youtubeLink = videoLink
+    contentDescription = await page.evaluate(()=>{
+      return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
+    }).catch((e)=>{ console.log('could not get description') })
+    
+    
+    contentLanguage = await page.evaluate(()=>{
+      let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(7)").textContent
+      let cnArr =  cn.split(':')
+      return cnArr[1]
+    }).catch((e)=>{ console.log('coulsd not get language') })
+    
+    
+    contentYear = await page.evaluate(()=>{
+      let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
+      let cnArr =  cn.split(':')
+      return cnArr[1]
+    }).catch((e)=>{ console.log('could not get year') })
+    
+    contentGenre = await page.evaluate(()=>{
+      let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
+      let cnArr =  cn.split(':')
+      return cnArr[1]
+    }).catch((e)=>{ console.log('could not get genre') })
+    
+    contentCountry = await page.evaluate(()=>{
+      let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(3)").textContent
+      let cnArr =  cn.split(':')
+      return cnArr[1]
+    }).catch((e)=>{ console.log('could not get country') })
+    
+    
+    let imgLink = await page.evaluate(async ()=>{
+      let link = document.querySelector("#dle-content > div > div.mcols.fx-row > div.short-left.mleft.icon-l > div.short-img.img-wide > img").getAttribute('src') 
+      return 'https://filmux.info' + link
+    }).catch((e)=>{ console.log('could not get img') })
+    
+    
+    const page2 = await browser.newPage();
+    let imgPage = await page2.goto(imgLink, { waitUntil: 'networkidle2' })
+    page2.waitForNavigation({ waitUntil: 'networkidle0' })
+    
+    var imgIntv = setInterval(async () => {
+      var images = []
+      loadingTimout ++
+      let imagesCollector = await page2.$eval('img', (el)=>{
+        return el.src
+      }).catch((e)=>{ console.log('could not detet image') })
+      
+      
+      if(imagesCollector != undefined || imagesCollector != null){
+        imagesCollector =  imagesCollector.split('?')[0]
+        console.log('successfully gotten right image')
+        if(imagesCollector == imgLink){
+          images = imagesCollector 
+          if(images.length != 0){
+            clearInterval(imgIntv)
+            loadingTimout = 0
+            console.log('waiting to buffer image...')
+            
+            let buffer = await imgPage.buffer();
+            contentImage =  'data:image/png;base64,' + buffer.toString('base64')
+            console.log('image buffered')
+          
+            movLink = await page.evaluate(async ()=>{
+              var sc
+              await $("script").each(function(){ 
+                var rw = $(this).html()
+                if(rw.includes('new Playerjs')){
+                  let rwArr = rw.split("//")
+                  let rwL = rwArr[1]
+                  sc = rwL.replace('"});', "")
                 }
+              })
+              return sc
+            }).catch((e)=>{ console.log('could not get page script') })
+
+            movLink = encodeURIComponent('https://' + movLink)
+            
+            console.log('site datas scraped')
+            console.log('getting imdb info')
+            let contentTitleEng = await googleTranslator(contentTitle, 'lt', 'en').catch((e)=> console.log('tranlation error probably empty text passed'))
+            let rq =  await imdb.get({name: contentTitleEng}, {apiKey: process.env.IMDB_ID, timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
+            if(rq == undefined){
+              imdb_id = 'not found'
+            }else{
+              console.log('successfully gotten imdb data')
+              imdb_id = rq.imdbid
+              console.log('imdb data scrapped')
             }
+            console.log('checking if file if movie is not duplicate')
+            const check_is_not_dup = checkIsNotDuplicate(contentTitle)
+            if(check_is_not_dup){
+              console.log('uploading to server 1')
+              pb1 = await upload_neto_server(movLink)
+              console.log('server 1 uploaded')
+              console.log('uploading to server 2')
+              pb2 = await upload_streamtape_server(movLink)
+              console.log('server 2 uploaded')
+              console.log('uploading to server 2')
+              p1 = await upload_streamsb_server(movLink)
+              console.log('server 3 uploaded')
+              console.log('uploading movie to ziuri')
+              const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage)
+              console.log(upload_movie)
+            }else console.log('dup content')
+          }else{
+            console.log('cloudfare blocking image page reconnecting...')
+            if(loadingTimout > 40){
+              await page2.reload({ waitUntil: ["networkidle2"]})
+              loadingTimout = 0
+            }
+          }
+        }else console.log('wrong imgage detected getting right one')
+      } 
+      
+    }, 2000);
     
-        }
-
-        console.log('iframe datas scraped')
-        let contentTitleEng = await googleTranslator(contentTitle, 'lt', 'en');
-        let rq =  await imdb.get({name: contentTitleEng}, {apiKey: process.env.IMDB_ID, timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
-        if(rq == undefined){
-             contentCountry = ''
-             imdb_id = ''
-             let imgPage = await page.goto(imgLink, { waitUntil: 'networkidle2' });
-             let fileName = Math.floor(Math.random() * (900000 - 100000)) + 100000 + '' + Math.floor(Math.random() * (900000 - 100000)) + 100000 + '' +Math.floor(Math.random() * (900000 - 100000)) + 100000 + '.png'
-             await fs.writeFile(path.join(__dirname + '/../App/assets/' + fileName), await imgPage.buffer())
-             contentImage = 'https://ziuri.xyz/assets/' + fileName
-        }else{
-            contentCountry = rq.year
-            imdb_id = rq.imdbid
-            contentImage = rq.poster
-            console.log('imdb data scrapped')
-        }
-         
-        pb1 = await upload_neto_server(netuLink)
-        console.log('server 1 uploaded')
-        pb2 = await upload_streamtape_server(youtubeLink)
-        console.log('server 2 uploaded')
-        p1 = await upload_streamsb_server(pb2)
-        console.log('server 3 uploaded')
-        await browser.close();
-
-        const check_is_not_dup = checkIsNotDuplicate(contentTitle)
-        if(check_is_not_dup){
-            const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage)
-            console.log(upload_movie)
-        }else console.log('dup content')
-    }, 20000);
+  }else{
+    if(loadingTimout > 80){
+      await page.reload({ waitUntil: ["networkidle2"]})
+      loadingTimout = 0
+    }
+  }
+}, 2000);
 }
 
-console.log('ok') 
+const startCrawller = async()=>{
+  const browser = await puppeteer.launch({headless: false});
+  const crawler = await browser.newPage();
+  await crawler.setUserAgent('Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
+  var cookie = [ // cookie exported by google chrome plugin editthiscookie
+  {
+    "domain": "filmux.info",
+    "hostOnly": false,
+    "httpOnly": true,
+    "name": "PHPSESSID",
+    "path": "/",
+    "sameSite": "no_restriction",
+    "secure": false,
+    "session": false,
+    "storeId": "0",
+    "value": "ac5c1spa7qclfh3ri3lgv682u5",
+    "id": 1
+  }
+]
+const viewport = {
+  width: 1920 + Math.floor(Math.random() * 100),
+  height: 3000 + Math.floor(Math.random() * 100),
+  deviceScaleFactor: 1,
+  hasTouch: false,
+  isLandscape: false,
+  isMobile: false,
+}
+await crawler.setViewport(viewport);
+await crawler.setCookie(...cookie)
+await crawler.goto('https://filmux.info/filmai/', { waitUntil: 'networkidle2' })
+crawler.waitForNavigation({ waitUntil: 'networkidle2' })
 
-//   const startCrawller= async()=>{
-//     const browser = await puppeteer.launch();
-//     const crawler = await browser.newPage();
-//     console.log('ok2')
-//     await crawler.goto('https://45.142.214.18/filmai/',{ waitUntil: 'networkidle2' });
-//     setTimeout(async () => {
-//         const movieLink = await crawler.$$eval('a.card__img', (el)=>{
-//             return el.map(el => el.href);
-//         }) 
-//         for (const link of movieLink){
-//             scrapPage(link)
-//         }h
-//     }, 10000);
-//   }
+var loadingTimout = 0
+let lintv = setInterval(()=> loadingTimout ++, 1000)
 
-//   startCrawller()
+var movieLink = []
+var intv = setInterval(async()=>{
+  
+  let pgLoadTest = await crawler.$$eval('a.short-img', (el)=>{
+    return el.map(el => el.href);
+  }).catch(er => console.log('error injecting scrap test probably a navigation going on: re injecting...'))
+  
+  if(pgLoadTest != undefined || pgLoadTest != null ) movieLink = pgLoadTest
+  
+  if(movieLink.length != 0){
+    
+    clearInterval(intv)
+    clearInterval(lintv)
+    console.log('Cloudfare DDoS protection successfully bypassed')
+    // for (let link of movieLink){
+    //   scrapPage(browser, viewport, link)
+    // }
+    scrapPage(browser, viewport, movieLink[0])
+    console.log('arr is', movieLink)
+    
+  }else{
+    console.log('cloudfare blocking connection: reconnecting....', loadingTimout)
+    if(loadingTimout > 150){
+      await crawler.reload({ waitUntil: ["networkidle2"]})
+      loadingTimout = 0
+    }
+  }
+}, 2000)
 
-// scrapPage('https://45.142.214.18/10254-greitoji-pagalba-online.html')
+}
 
-   
+startCrawller()
+
 
 
 
