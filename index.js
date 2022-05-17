@@ -201,7 +201,7 @@ var intv = setInterval(async () => {
 }
 
 const startCrawller = async()=>{
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({headless: false,  executablePath: 'node_modules/puppeteer/.local-chromium/win64-982053/chrome-win/chrome.exe'});
   const crawler = await browser.newPage();
   await crawler.setUserAgent('Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
   var cookie = [ // cookie exported by google chrome plugin editthiscookie
@@ -249,10 +249,12 @@ var intv = setInterval(async()=>{
     clearInterval(intv)
     clearInterval(lintv)
     console.log('Cloudfare DDoS protection successfully bypassed')
-    for (let link of movieLink){
-      scrapPage(browser, viewport, link)
-    } 
-
+    // for (let link of movieLink){
+    //   scrapPage(browser, viewport, link)
+    // }
+    scrapPage(browser, viewport, movieLink[0])
+    console.log('arr is', movieLink)
+    
   }else{
     console.log('cloudfare blocking connection: reconnecting....', loadingTimout)
     if(loadingTimout > 150){

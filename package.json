@@ -4,7 +4,7 @@
   "description": "ziuri backned built by oluwayomi timileyin",
   "main": "nodemon index.js",
   "scripts": {
-    
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",
