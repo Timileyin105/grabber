@@ -11,6 +11,7 @@ const { googleTranslator } = require('translators');
 
 
 async function scrapPage(url){
+
     var netuLink
     var youtubeLink
     var contentTitle
@@ -29,6 +30,7 @@ async function scrapPage(url){
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url,{ waitUntil: 'networkidle2' });
+
     setTimeout(async() => {
         
         await page.screenshot({ path: 'screen.jpg', fullPage: true})
@@ -122,7 +124,7 @@ async function scrapPage(url){
     }, 20000);
 }
 
-console.log('ok')
+console.log('ok') 
 
 //   const startCrawller= async()=>{
 //     const browser = await puppeteer.launch();
