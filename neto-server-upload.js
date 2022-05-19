@@ -3,10 +3,14 @@ const { default: axios } = require("axios")
 const upload_neto_server = (link) => {
    return new Promise(async (resolve, reject) => {
         try {
-            let upload = await neto_remote_upload(link).catch((e)=> console.log('err neto 7'))
-            let video_id = await neto_get_video_id(upload).catch((e)=> console.log('err neto 8'))
-            let embed_link = await neto_get_embed(video_id).catch((e)=> console.log('err neto 9'))
-            resolve(embed_link)
+            if(link == '' || link == undefined) {
+                resolve('could not upload empty content')
+            }else{
+                let upload = await neto_remote_upload(link).catch((e)=> console.log('err neto 7'))
+                let video_id = await neto_get_video_id(upload).catch((e)=> console.log('err neto 8'))
+                let embed_link = await neto_get_embed(video_id).catch((e)=> console.log('err neto 9'))
+                resolve(embed_link)
+            }
         } catch (error) {
             resolve('neto upload error')
        }

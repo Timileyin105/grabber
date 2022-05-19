@@ -64,134 +64,137 @@ var intv = setInterval(async () => {
       console.log('Cloudfare DDoS protection successfully bypassed')
        setTimeout(async () => {
       
-        contentTitle  = await page.evaluate(()=>{
-          return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > h1").textContent
-        }).catch((e)=>{ console.log('cannot read title') })
-    
-        contentRating  = await page.evaluate(()=>{
-          let cn = document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(9)").textContent
-          let cnArr =  cn.split(':')
-          return cnArr[1].replace('(balsų', '')
-        }).catch((e)=>{ console.log('could not get title') })
-    
-    
-        contentDescription = await page.evaluate(()=>{
-          return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
-        }).catch((e)=>{ console.log('could not get description') })
-    
-    
-        contentLanguage = await page.evaluate(()=>{
-          let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(7)").textContent
-          let cnArr =  cn.split(':')
-          return cnArr[1]
-        }).catch((e)=>{ console.log('coulsd not get language') })
-    
-    
-        contentYear = await page.evaluate(()=>{
-          let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
-          let cnArr =  cn.split(':')
-          return cnArr[1]
-        }).catch((e)=>{ console.log('could not get year') })
-    
-        contentGenre = await page.evaluate(()=>{
-          let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
-          let cnArr =  cn.split(':')
-          return cnArr[1]
-        }).catch((e)=>{ console.log('could not get genre') })
-    
-        contentCountry = await page.evaluate(()=>{
-          let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(3)").textContent
-          let cnArr =  cn.split(':')
-          return cnArr[1]
-        }).catch((e)=>{ console.log('could not get country') })
-    
-    
-        let imgLink = await page.evaluate(async ()=>{
-          let link = document.querySelector("#dle-content > div > div.mcols.fx-row > div.short-left.mleft.icon-l > div.short-img.img-wide > img").getAttribute('src') 
-          return 'https://filmux.info' + link
-        }).catch((e)=>{ console.log('could not get img') })
-    
-    
-        const page2 = await browser.newPage();
-        let imgPage = await page2.goto(imgLink, { waitUntil: 'networkidle2' })
-        page2.waitForNavigation({ waitUntil: 'networkidle0' })
-    
-        var imgIntv = setInterval(async () => {
-          var images = []
-          loadingTimout ++
-          let imagesCollector = await page2.$eval('img', (el)=>{
-            return el.src
-          }).catch((e)=>{ console.log('could not detet image') })
+          contentTitle  = await page.evaluate(()=>{
+            return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > h1").textContent
+          }).catch((e)=>{ console.log('cannot read title') })
+      
+          contentRating  = await page.evaluate(()=>{
+            let cn = document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(9)").textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1].replace('(balsų', '')
+          }).catch((e)=>{ console.log('could not get title') })
       
       
-          if(imagesCollector != undefined || imagesCollector != null){
-            imagesCollector =  imagesCollector.split('?')[0]
-            console.log('successfully gotten right image')
-            if(imagesCollector == imgLink){
-              images = imagesCollector 
-              if(images.length != 0){
-                clearInterval(imgIntv)
-                loadingTimout = 0
-                console.log('waiting to buffer image...')
-            
-                let buffer = await imgPage.buffer();
-                contentImage =  'data:image/png;base64,' + buffer.toString('base64')
-                console.log('image buffered')
-          
-                movLink = await page.evaluate(async ()=>{
-                  var sc
-                  await $("script").each(function(){ 
-                    var rw = $(this).html()
-                    if(rw.includes('new Playerjs')){
-                      let rwArr = rw.split("//")
-                      let rwL = rwArr[1]
-                      sc = rwL.replace('"});', "")
-                    }
-                  })
-                  return sc
-                }).catch((e)=>{ console.log('could not get page script') })
+          contentDescription = await page.evaluate(()=>{
+            return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
+          }).catch((e)=>{ console.log('could not get description') })
+      
+      
+          contentLanguage = await page.evaluate(()=>{
+            let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(7)").textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1]
+          }).catch((e)=>{ console.log('coulsd not get language') })
+      
+      
+          contentYear = await page.evaluate(()=>{
+            let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1]
+          }).catch((e)=>{ console.log('could not get year') })
+      
+          contentGenre = await page.evaluate(()=>{
+            let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1]
+          }).catch((e)=>{ console.log('could not get genre') })
+      
+          contentCountry = await page.evaluate(()=>{
+            let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(3)").textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1]
+          }).catch((e)=>{ console.log('could not get country') })
+      
+      
+          let imgLink = await page.evaluate(async ()=>{
+            let link = document.querySelector("#dle-content > div > div.mcols.fx-row > div.short-left.mleft.icon-l > div.short-img.img-wide > img").getAttribute('src') 
+            return 'https://filmux.info' + link
+          }).catch((e)=>{ console.log('could not get img') })
+      
+          if(contentTitle != '' || contentTitle != undefined || contentDescription != '' || contentDescription  != undefined  || contentGenre != ''  || contentGenre  != undefined || contentImage != '' || contentImage != undefined){
 
-                movLink = encodeURIComponent('https://' + movLink)
-            
-                console.log('site datas scraped')
-                console.log('getting imdb info')
-                let contentTitleEng = await googleTranslator(contentTitle, 'lt', 'en').catch((e)=> console.log('tranlation error probably empty text passed'))
-                let rq =  await imdb.get({name: contentTitleEng}, {apiKey: '91e97c28', timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
-                if(rq == undefined){
-                  imdb_id = 'not found'
-                }else{
-                  console.log('successfully gotten imdb data')
-                  imdb_id = rq.imdbid
-                  console.log('imdb data scrapped')
-                }
-                console.log('checking if file if movie is not duplicate')
-                const check_is_not_dup = checkIsNotDuplicate(contentTitle)
-                if(check_is_not_dup){
-                  console.log('uploading to server 1')
-                  pb1 = await upload_neto_server(movLink).catch((er)=> console.log('err 1'))
-                  console.log('server 1 uploaded')
-                  console.log('uploading to server 2')
-                  pb2 = await upload_streamtape_server(movLink).catch((er)=> console.log('err 2'))
-                  console.log('server 2 uploaded')
-                  console.log('uploading to server 2')
-                  p1 = await upload_streamsb_server(movLink).catch((er)=> console.log('err 3'))
-                  console.log('server 3 uploaded')
-                  console.log('uploading movie to ziuri')
-                  const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage).catch((er)=> console.log('err 4'))
-                  console.log(upload_movie)
-                }else console.log('dup content')
-              }else{
-                console.log('cloudfare blocking image page reconnecting...')
-                if(loadingTimout > 40){
-                  await page2.reload({ waitUntil: ["networkidle2"]}).catch((er)=> console.log('err 5'))
-                  loadingTimout = 0
-                }
-              }
-            }else console.log('wrong imgage detected getting right one')
-          } 
+            const page2 = await browser.newPage();
+            let imgPage = await page2.goto(imgLink, { waitUntil: 'networkidle2' })
+            page2.waitForNavigation({ waitUntil: 'networkidle0' })
       
-        }, 2000);
-       }, 1000);
+            var imgIntv = setInterval(async () => {
+              var images = []
+              loadingTimout ++
+              let imagesCollector = await page2.$eval('img', (el)=>{
+                return el.src
+              }).catch((e)=>{ console.log('could not detet image') })
+        
+        
+              if(imagesCollector != undefined || imagesCollector != null){
+                imagesCollector =  imagesCollector.split('?')[0]
+                console.log('successfully gotten right image')
+                if(imagesCollector == imgLink){
+                  images = imagesCollector 
+                  if(images.length != 0){
+                    clearInterval(imgIntv)
+                    loadingTimout = 0
+                    console.log('waiting to buffer image...')
+              
+                    let buffer = await imgPage.buffer();
+                    contentImage =  'data:image/png;base64,' + buffer.toString('base64')
+                    console.log('image buffered')
+            
+                    movLink = await page.evaluate(async ()=>{
+                      var sc
+                      await $("script").each(function(){ 
+                        var rw = $(this).html()
+                        if(rw.includes('new Playerjs')){
+                          let rwArr = rw.split("//")
+                          let rwL = rwArr[1]
+                          sc = rwL.replace('"});', "")
+                        }
+                      })
+                      return sc
+                    }).catch((e)=>{ console.log('could not get page script') })
+
+                    movLink = encodeURIComponent('https://' + movLink)
+              
+                    console.log('site datas scraped')
+                    console.log('getting imdb info')
+                    let contentTitleEng = await googleTranslator(contentTitle, 'lt', 'en').catch((e)=> console.log('tranlation error probably empty text passed'))
+                    let rq =  await imdb.get({name: contentTitleEng}, {apiKey: '91e97c28', timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
+                    if(rq == undefined){
+                      imdb_id = 'not found'
+                    }else{
+                      console.log('successfully gotten imdb data')
+                      imdb_id = rq.imdbid
+                      console.log('imdb data scrapped')
+                    }
+                    console.log('checking if file if movie is not duplicate')
+                    const check_is_not_dup = checkIsNotDuplicate(contentTitle)
+                    if(check_is_not_dup){
+                      console.log('uploading to server 1')
+                      pb1 = await upload_neto_server(movLink).catch((er)=> console.log('err 1'))
+                      console.log('server 1 uploaded')
+                      //console.log('uploading to server 2')
+                      // pb2 = await upload_streamtape_server(movLink).catch((er)=> console.log('err 2'))
+                      // console.log('server 2 uploaded')
+                      console.log('uploading to server 3')
+                      p1 = await upload_streamsb_server(movLink).catch((er)=> console.log('err 3'))
+                      console.log('server 3 uploaded')
+                      console.log('uploading movie to ziuri')
+                      const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage).catch((er)=> console.log('err 4'))
+                      console.log(upload_movie)
+                    }else console.log('dup content')
+                  }else{
+                    console.log('cloudfare blocking image page reconnecting...')
+                    if(loadingTimout > 40){
+                      await page2.reload({ waitUntil: ["networkidle2"]}).catch((er)=> console.log('err 5'))
+                      loadingTimout = 0
+                    }
+                  }
+                }else console.log('wrong imgage detected getting right one')
+              } 
+        
+            }, 2000);
+          }else{ console.log('upload process stopped unable to grab content for this movie') }
+
+       }, 2000);
   }else{
     if(loadingTimout > 80){
       await page.reload({ waitUntil: ["networkidle2"]}).catch((er)=> console.log('err 6'))
