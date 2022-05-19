@@ -182,8 +182,7 @@ var intv = setInterval(async () => {
                         console.log(upload_movie)
                       }else console.log('dup content')
                     }else{ console.log('udefined imgpage') }
-                   
-                  }else{   ///endB
+                  }else{
                     console.log('cloudfare blocking image page reconnecting...')
                     if(loadingTimout > 40){
                       await page2.reload({ waitUntil: ["networkidle2"]}).catch((er)=> console.log('err 5'))
