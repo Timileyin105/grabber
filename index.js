@@ -11,7 +11,7 @@ puppeteer.use(StealthPlugin());
 const env = require('dotenv')
 env.config({ path: './.env'})
 
-async function scrapPage(browser, viewport, url){
+async function scrapPage(browser, viewport, url, resolve){
   var contentTitle
   var contentDescription
   var contentImage
@@ -171,12 +171,12 @@ var intv = setInterval(async () => {
                 pb1 = await upload_neto_server(movLink)
                 if(pb1 == false){
                   console.log('upload process stopped could not upload to neto server')
-                  resolve('')
+                  resolve()
                 }else{
                   console.log('server 1 uploaded')
                   console.log('uploading to server 3')
                   resolve()
-                  console.log('starting new scrap while awaiting sb upload')
+                  console.log('starting new scrape while awaiting sb upload')
                   p1 = await upload_streamsb_server(movLink)
                   if(p1 == false){
                     console.log('upload process stopped could not upload to netu')
@@ -205,7 +205,7 @@ var intv = setInterval(async () => {
       }, 2000);
     }else{
       console.log('upload process stopped could not get scrape data') 
-      resolve('')
+      resolve()
     }
   }else{
     if(loadingTimout > 80){
