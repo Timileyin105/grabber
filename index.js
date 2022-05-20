@@ -171,17 +171,20 @@ var intv = setInterval(async () => {
                 pb1 = await upload_neto_server(movLink)
                 if(pb1 == false){
                   console.log('upload process stopped could not upload to neto server')
+                  resolve('')
                 }else{
                   console.log('server 1 uploaded')
                   console.log('uploading to server 3')
                   p1 = await upload_streamsb_server(movLink)
                   if(p1 == false){
                     console.log('upload process stopped could not upload to netu')
+                    resolve('')
                   }else{
                     console.log('server 3 uploaded')
                     console.log('uploading movie to ziuri')
                     const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage)
                     console.log(upload_movie)
+                    resolve(upload_movie)
                   }
                 }
               }else console.log('dup content')
@@ -192,12 +195,15 @@ var intv = setInterval(async () => {
                 loadingTimout = 0
               }
             }
-          }else console.log('wrong imgage detected getting right one')
+          }else{
+            console.log('wrong imgage detected getting right one')
+          }
         } 
         
       }, 2000);
     }else{
       console.log('upload process stopped could not get scrape data') 
+      resolve('')
     }
   }else{
     if(loadingTimout > 80){
@@ -257,8 +263,14 @@ var intv = setInterval(async()=>{
     clearInterval(intv)
     clearInterval(lintv)
     console.log('Cloudfare DDoS protection successfully bypassed')
-    for (let link of movieLink){ 
-      scrapPage(browser, viewport, link)
+    for (let link of movieLink){
+        let upload = await new Promise(async (resolve) =>{
+        try {
+            await scrapPage(browser, viewport, link, resolve)
+        } catch (error) {
+             resolve('script error in process')
+        }
+      })
     }
   }else{
     console.log('cloudfare blocking connection: reconnecting....', loadingTimout)
