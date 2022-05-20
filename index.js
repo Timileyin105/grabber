@@ -175,10 +175,12 @@ var intv = setInterval(async () => {
                 }else{
                   console.log('server 1 uploaded')
                   console.log('uploading to server 3')
+                  resolve()
+                  console.log('starting new scrap while awaiting sb upload')
                   p1 = await upload_streamsb_server(movLink)
                   if(p1 == false){
                     console.log('upload process stopped could not upload to netu')
-                    resolve('')
+                    resolve()
                   }else{
                     console.log('server 3 uploaded')
                     console.log('uploading movie to ziuri')
@@ -215,7 +217,7 @@ var intv = setInterval(async () => {
 }
 
 const startCrawller = async()=>{
-  const browser = await puppeteer.launch({headless: true,  args: ['--no-sandbox', '--disable-setuid-sandbox']});
+  const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
   const crawler = await browser.newPage();
   await crawler.setUserAgent('Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
   var cookie = [ // cookie exported by google chrome plugin editthiscookie

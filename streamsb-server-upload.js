@@ -64,7 +64,6 @@ const streamsb_get_video_id = async(id)=>{
                         resolve(video_link)
                     }
                 } catch (error) {
-                    console.log(rq.data)
                    console.log('awaiting to get uploaded video embed url to streamsb  retrying..')
                 }
            }, 5000);
