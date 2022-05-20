@@ -34,10 +34,13 @@ const streamsb_remote_upload = async (link) =>{
         try { 
             let key = process.env.STREAMSB_API_KEY
             let resp = await  axios.get(`https://api.streamsb.com/api/upload/url?key=${key}&url=${link}`).catch((err) => console.log('error request to streamsb'))
-            if(resp.data.result.filecode){
-                let id = resp.data.result.filecode 
-                resolve(id)
-            }else{
+            try {
+                if(resp.data.result.filecode){
+                    let id = resp.data.result.filecode 
+                    resolve(id)
+                }
+            } catch (error) {
+                console.log(resp.data)
                 console.log('could not get filecode of uploaded video to sb server')
                 resolve(false)
             }
@@ -54,11 +57,16 @@ const streamsb_get_video_id = async(id)=>{
             var intv = setInterval(async () => {
                 let key = process.env.STREAMSB_API_KEY
                 let rq = await  axios.get(`https://api.streamsb.com/api/file/direct?key=${key}&file_code=${id}`).catch((err) => console.log('error request to streamsb'))
-                if(rq.data.result.n.url){
-                    clearInterval(intv)
-                    let video_link = rq.data.result.n.url
-                    resolve(video_link)
-                }else console.log('awaiting to get uploaded video embed url to streamsb  retrying..')
+                try {
+                    if(rq.data.result.n.url){
+                        clearInterval(intv)
+                        let video_link = rq.data.result.n.url
+                        resolve(video_link)
+                    }
+                } catch (error) {
+                    console.log(rq.data)
+                   console.log('awaiting to get uploaded video embed url to streamsb  retrying..')
+                }
            }, 5000);
         } catch (error) {
             console.log('catch error during upload to streamsb process 3')

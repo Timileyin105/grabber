@@ -41,12 +41,15 @@ const neto_remote_upload = async (link) =>{
         try {
             let key = 'da4b99461a0fc9bf0948baddbeb54221'
             let rq = await  axios.get(`https://netu.tv/api/file/remotedl?key=${key}&url=${link}`).catch((err) => console.log('error request to netu'))
-            if(rq.data.result.id){
-                let raw = rq.data.result.id
-                for (var i in raw){
-                    resolve(i)
+            try {
+                if(rq.data.result.id){
+                    let raw = rq.data.result.id
+                    for (var i in raw){
+                        resolve(i)
+                    }
                 }
-            }else{
+            } catch (error) {
+                console.log(rq.data)
                 resolve(false)
             }
         } catch (error) {
