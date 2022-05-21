@@ -80,35 +80,34 @@ var intv = setInterval(async () => {
     
     
     contentYear = await page.$$eval('.short-info', async (el)=>{
-      let cn = await el.find((e) => {
-          if(e.includes('Metai')){
-            return el
-          }
-      })
-     // let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
+      let elem =  el.find(e => e.textContent.includes('Metai'))
+      let cn =  elem.textContent
       let cnArr =  cn.split(':')
       return cnArr[1]
     }).catch((e)=>{ console.log('could not get year') })
 
-    console.log(contentYear)
-    
-    contentGenre = await page.evaluate(()=>{
-      let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
+    contentGenre = await page.$$eval('.short-info', async (el)=>{
+      let elem =  el.find(e => e.textContent.includes('Žanras'))
+      let cn =  elem.textContent
       let cnArr =  cn.split(':')
       return cnArr[1]
     }).catch((e)=>{ console.log('could not get genre') })
     
-    contentCountry = await page.evaluate(()=>{
-      let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(3)").textContent
+    contentCountry = await page.$$eval('.short-info', async (el)=>{
+      let elem =  el.find(e => e.textContent.includes('Šalis'))
+      let cn =  elem.textContent
       let cnArr =  cn.split(':')
       return cnArr[1]
-    }).catch((e)=>{ console.log('could not get country') })
-    
-    contentRating  = await page.evaluate(()=>{
-      let cn = document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(9)").textContent
+    }).catch((e)=>{ console.log('could not get genre') })
+
+    contentRating = await page.$$eval('.short-info', async (el)=>{
+      let elem =  el.find(e => e.textContent.includes('IMDB'))
+      let cn =  elem.textContent
       let cnArr =  cn.split(':')
       return cnArr[1].replace('(balsų', '')
-    }).catch((e)=>{ console.log('could not get rating') })
+    }).catch((e)=>{ console.log('could not get genre') })
+  
+    console.log(contentRating)
     
     let imgLink = await page.evaluate(async ()=>{
       let link = document.querySelector("#dle-content > div > div.mcols.fx-row > div.short-left.mleft.icon-l > div.short-img.img-wide > img").getAttribute('src') 
@@ -166,11 +165,13 @@ var intv = setInterval(async () => {
               }else{
                 console.log('successfully gotten imdb data')
                 imdb_id = rq.imdbid
+                contentRating = rq.rating
+                contentCountry = rq.country
+                contentYear = rq.year
                 console.log('imdb data scrapped')
               }
               console.log('checking if file if movie is not duplicate')
-             // const check_is_not_dup = checkIsNotDuplicate(contentTitle)
-              let check_is_not_dup = false
+              let check_is_not_dup = await checkIsNotDuplicate(contentTitle)
               if(check_is_not_dup){
                 pb2 = 'NAN'
                 console.log('uploading to server 1')
