@@ -106,8 +106,6 @@ var intv = setInterval(async () => {
       let cnArr =  cn.split(':')
       return cnArr[1].replace('(balsų', '')
     }).catch((e)=>{ console.log('could not get genre') })
-  
-    console.log(contentRating)
     
     let imgLink = await page.evaluate(async ()=>{
       let link = document.querySelector("#dle-content > div > div.mcols.fx-row > div.short-left.mleft.icon-l > div.short-img.img-wide > img").getAttribute('src') 
