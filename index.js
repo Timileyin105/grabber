@@ -65,14 +65,7 @@ var intv = setInterval(async () => {
     
     contentTitle  = await page.evaluate(()=>{
       return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > h1").textContent
-    }).catch((e)=>{ console.log('cannot read title') })
-    
-    contentRating  = await page.evaluate(()=>{
-      let cn = document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(9)").textContent
-      let cnArr =  cn.split(':')
-      return cnArr[1].replace('(balsų', '')
-    }).catch((e)=>{ console.log('could not get title') })
-    
+    }).catch((e)=>{ console.log('cannot read title') })    
     
     contentDescription = await page.evaluate(()=>{
       return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
@@ -86,11 +79,18 @@ var intv = setInterval(async () => {
     }).catch((e)=>{ console.log('coulsd not get language') })
     
     
-    contentYear = await page.evaluate(()=>{
-      let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
+    contentYear = await page.$$eval('.short-info', async (el)=>{
+      let cn = await el.find((e) => {
+          if(e.includes('Metai')){
+            return el
+          }
+      })
+     // let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
       let cnArr =  cn.split(':')
       return cnArr[1]
     }).catch((e)=>{ console.log('could not get year') })
+
+    console.log(contentYear)
     
     contentGenre = await page.evaluate(()=>{
       let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(2)").textContent
@@ -104,6 +104,11 @@ var intv = setInterval(async () => {
       return cnArr[1]
     }).catch((e)=>{ console.log('could not get country') })
     
+    contentRating  = await page.evaluate(()=>{
+      let cn = document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(9)").textContent
+      let cnArr =  cn.split(':')
+      return cnArr[1].replace('(balsų', '')
+    }).catch((e)=>{ console.log('could not get rating') })
     
     let imgLink = await page.evaluate(async ()=>{
       let link = document.querySelector("#dle-content > div > div.mcols.fx-row > div.short-left.mleft.icon-l > div.short-img.img-wide > img").getAttribute('src') 
@@ -164,7 +169,8 @@ var intv = setInterval(async () => {
                 console.log('imdb data scrapped')
               }
               console.log('checking if file if movie is not duplicate')
-              const check_is_not_dup = checkIsNotDuplicate(contentTitle)
+             // const check_is_not_dup = checkIsNotDuplicate(contentTitle)
+              let check_is_not_dup = false
               if(check_is_not_dup){
                 pb2 = 'NAN'
                 console.log('uploading to server 1')
@@ -189,7 +195,10 @@ var intv = setInterval(async () => {
                     resolve(upload_movie)
                   }
                 }
-              }else console.log('dup content')
+              }else{
+                resolve()
+                console.log('dup content')
+              } 
             }else{
               console.log('cloudfare blocking image page reconnecting or imgPage is undefined...')
               if(loadingTimout > 40){
