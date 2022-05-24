@@ -24,6 +24,29 @@ const insertData = async (imdb_id, p1, pb1, pb2, title, movie_description, movie
     })
 }
 
+const insertSerieData = async (imdb_id, p1, pb1, pb2, title, episode, serie_description, serie_image_link, serie_category, serie_ratings, serie_country, serie_year, serie_sub)=>{
+    return new Promise(async (resolve, reject) => {
+        try {
+            if(p1 == '' || pb1 == '' || pb2 == '' || title == '' || serie_description == '' || serie_image_link == '' || serie_category == '' || serie_country == '' || serie_year == ''){
+                resolve('incomplete parameters to upload to ziuir process..failed')
+            }else{
+                let rq = await axios({
+                    method: "post",
+                    url:"https://ziuri.xyz/grabber/upload-serie",
+                    data: { imdb_id: imdb_id,  p1 : p1, pb1 : pb1, pb2 : pb2, title : title, episode: episode , serie_description : serie_description, serie_image_link : serie_image_link, serie_category : serie_category, serie_ratings: serie_ratings, serie_country: serie_country, serie_year : serie_year, serie_sub: serie_sub },
+                    headers: { "Content-Type": "application/json" }
+                })
+
+                let response = rq.data.resp
+                resolve(response)
+            }
+
+        } catch (error) { 
+            resolve('error checking if content exist: proccess..failed')
+        }
+    })
+}
+
 const checkIsNotDuplicate = async (title)=>{
     return new Promise(async (resolve, reject)=>{
         try {
@@ -47,4 +70,28 @@ const checkIsNotDuplicate = async (title)=>{
     })
 }
 
-module.exports = { insertData, checkIsNotDuplicate }
+const checkSerieIsNotDuplicate =  async (title, episode)=>{
+    return new Promise(async (resolve, reject)=>{
+        try {
+            if(title == '' || title == undefined){
+                resolve(false)
+
+            }else{
+                let rq = await axios({
+                    method: "post",
+                    url:"https://ziuri.xyz/grabber/check-serie-exist",
+                    data: { title : title, episode: episode },
+                    headers: { "Content-Type": "application/json" }
+                }).catch((e)=> console.log('err checking with axios'))
+
+                let response = rq.data.resp
+                resolve(response)
+            }
+        } catch (error) {
+            
+        }
+    })
+}
+
+
+module.exports = { insertData, checkIsNotDuplicate, checkSerieIsNotDuplicate, insertSerieData }

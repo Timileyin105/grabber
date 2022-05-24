@@ -3,11 +3,25 @@ const { default: axios } = require("axios")
 const upload_streamtape_server = (link) => {
    return new Promise(async (resolve, reject) => {
         try {
-            let upload = await streamtape_remote_upload(link).catch((e)=> console.log('err st 8'))
-            let video_link = await streamtape_get_video_id(upload).catch((e)=> console.log('err st 9'))
-            resolve(video_link)
+            var upload, video_link
+            if(link == '' || link == undefined){
+                console.log('empty video link passed to streamtape server')
+                resolve(false)
+            }else{
+                upload = await streamtape_remote_upload(link).catch((e)=> console.log('err st 8'))
+                if(upload == false){
+                    console.log('could not upload streamtape server')
+                    resolve(false)
+                }else{
+                    video_link = await streamtape_get_video_id(upload).catch((e)=> console.log('err st 9'))
+                    if(video_link == false){
+                        console.log('could not get uploaded video to streamtape server link')
+                        resolve(false)
+                    }
+                }
+            }
         } catch (error) {
-            resolve('error uploaing')
+            resolve(false)
        }
    })
 }
@@ -18,12 +32,13 @@ const streamtape_remote_upload = async (link) =>{
             let login = '01754716cdc86092533a'
             let key = 'OxpMZyjympIZMmK'
             let resp = await  axios.get(`https://api.streamtape.com/remotedl/add?login=${login}&key=${key}&url=${link}`).catch((err) => console.log('error request to streamtp'))
+            var id = false
             if(resp.data){
-                if(resp.data.result.n){
-                    let id = resp.data.result.n
-                }
-            }
-            resolve(id)
+                if(resp.data.result.id){
+                    id = resp.data.result.id
+                    resolve(id)
+                }else resolve(id)
+            }else resolve(id)
         } catch (error) {
             resolve('error uploaing')
         }
@@ -48,7 +63,7 @@ const streamtape_get_video_id = async(id)=>{
                         }
                     }
                 }
-           }, 30000);
+           }, 10000);
        } catch (error) {
         resolve('error uploaing')
        }

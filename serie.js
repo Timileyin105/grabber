@@ -1,0 +1,268 @@
+
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const { upload_neto_server } = require ('./neto-server-upload')
+const { upload_streamsb_server } = require('./streamsb-server-upload')
+const { insertSerieData, checkSerieIsNotDuplicate } = require('./insert-data')
+const imdb = require('imdb-api')
+puppeteer.use(StealthPlugin())
+const env = require('dotenv')
+env.config({ path: './.env'})
+
+async function startSerieCrawler(url){
+    var contentTitle
+    var contentTitleEng
+    var contentDescription
+    var contentImage
+    var contentLanguage
+    var contentYear
+    var contentRating
+    var contentGenre
+    var contentCountry
+    var pb1
+    var pb2
+    var pb1
+    var imdb_id
+    
+    const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
+    const viewport = {
+        width: 1920 + Math.floor(Math.random() * 100),
+        height: 3000 + Math.floor(Math.random() * 100),
+        deviceScaleFactor: 1,
+        hasTouch: false,
+        isLandscape: false,
+        isMobile: false,
+    }
+    var cookie = [ // cookie exported by google chrome plugin editthiscookie
+    {
+        "domain": "filmux.info",
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "PHPSESSID",
+        "path": "/",
+        "sameSite": "no_restriction",
+        "secure": false,
+        "session": false,
+        "storeId": "0",
+        "value": "ac5c1spa7qclfh3ri3lgv682u5",
+        "id": 1
+    }
+] 
+
+const page = await browser.newPage();
+await page.setUserAgent('Mozilla/5.0 (contentCountryWindows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
+await page.setViewport(viewport);
+await page.setCookie(...cookie)
+await page.goto(url,{ waitUntil: 'networkidle2' });  
+page.waitForNavigation({ waitUntil: 'networkidle0' })
+var loadingTimout = 0
+var intv = setInterval(async () => {
+    loadingTimout ++ 
+    var iframes = []
+    
+    let iframesCollector = await page.$eval('#dle-content', (el)=>{
+        if(el != null || el != undefined) return { key : 'cool'}
+    }).catch((e)=>{ console.log('clouldfare blcking scrapping could not detet content reconnecting..') })
+    
+    if(iframesCollector != undefined || iframesCollector != null) iframes = iframesCollector
+    
+    if(iframes.length != 0){
+        clearInterval(intv)
+        loadingTimout = 0
+        console.log('Cloudfare DDoS protection successfully bypassed')
+        
+        contentTitle  = await page.evaluate(()=>{
+            return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > h1").textContent
+        }).catch((e)=>{ console.log('cannot read title') })    
+
+        contentTitleEng  = await page.evaluate(()=>{
+            return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > div").textContent
+          }).catch((e)=>{ console.log('cannot read eng title') })    
+        
+        contentDescription = await page.evaluate(()=>{
+            return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
+        }).catch((e)=>{ console.log('could not get description') })
+        
+        
+        contentLanguage = await page.evaluate(()=>{
+            let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(7)").textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1]
+        }).catch((e)=>{ console.log('coulsd not get language') })
+        
+        
+        contentYear = await page.$$eval('.short-info', async (el)=>{
+            let elem =  el.find(e => e.textContent.includes('Metai'))
+            let cn =  elem.textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1]
+        }).catch((e)=>{ console.log('could not get year') })
+        
+        contentGenre = await page.$$eval('.short-info', async (el)=>{
+            let elem =  el.find(e => e.textContent.includes('Žanras'))
+            let cn =  elem.textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1]
+        }).catch((e)=>{ console.log('could not get genre') })
+        
+        contentCountry = await page.$$eval('.short-info', async (el)=>{
+            let elem =  el.find(e => e.textContent.includes('Šalis'))
+            let cn =  elem.textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1]
+        }).catch((e)=>{ console.log('could not get genre') })
+        
+        contentRating = await page.$$eval('.short-info', async (el)=>{
+            let elem =  el.find(e => e.textContent.includes('IMDB'))
+            let cn =  elem.textContent
+            let cnArr =  cn.split(':')
+            return cnArr[1].replace('(balsų', '')
+        }).catch((e)=>{ console.log('could not get genre') })
+        
+        let imgLink = await page.evaluate(async ()=>{
+            let link = document.querySelector("#dle-content > div > div.mcols.fx-row > div.short-left.mleft.icon-l > div.short-img.img-wide > img").getAttribute('src') 
+            return 'https://filmux.info' + link
+        }).catch((e)=>{ console.log('could not get img') })
+        
+        if(contentTitle != '' || contentTitle != undefined || contentDescription != '' || contentDescription  != undefined  || contentGenre != ''  || contentGenre  != undefined || contentImage != '' || contentImage != undefined){
+            const page2 = await browser.newPage();
+            var imgPage = await page2.goto(imgLink, { waitUntil: 'networkidle2' })
+            page2.waitForNavigation({ waitUntil: 'networkidle0' })
+            
+            var imgIntv = setInterval(async () => {
+                var images = []
+                loadingTimout ++
+                let imagesCollector = await page2.$eval('img', (el)=>{
+                    return el.src
+                }).catch((e)=>{ console.log('could not detet image') })
+                
+                
+                if(imagesCollector != undefined || imagesCollector != null){
+                    imagesCollector =  imagesCollector.split('?')[0]
+                    console.log('successfully gotten right image')
+                    if(imagesCollector == imgLink){
+                        images = imagesCollector 
+                        if(images.length != 0 && imgPage != undefined){
+                            clearInterval(imgIntv)
+                            loadingTimout = 0
+                            console.log('waiting to buffer image...')
+                            
+                            let buffer = await imgPage.buffer();
+                            contentImage =  'data:image/png;base64,' + buffer.toString('base64')
+                            console.log('image buffered')
+                            let rq =  await imdb.get({name: contentTitleEng}, {apiKey: process.env.IMDB_ID, timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
+                            if(rq == undefined){
+                                imdb_id = 'not found'
+                            }else{
+                                console.log('successfully gotten imdb data')
+                                imdb_id = rq.imdbid
+                                contentRating = rq.rating
+                                contentYear = rq.year
+                                console.log('imdb data scrapped')
+                            }
+
+                            console.log('site datas scraped')
+                           
+                            let episodesArray = await page.evaluate(async ()=>{
+                                var sc
+                                await $("script").each(function(){ 
+                                    var rw = $(this).html()
+                                    if(rw.includes('new Playerjs')){
+                                        let sc2 = rw.replace(/\r?\n|\r/g, "")
+                                        let sc3 = sc2.split('var player = new Playerjs({   id:"player",   file:')[1]
+                                        let sc4 = sc3.replace('});', '')
+                                        sc = sc4.replace(',]' , ']')
+                                    }
+                                })
+                                return sc
+                            }).catch((e)=>{ console.log('could not get page script') })
+                            
+                            try {
+                                let episodeObject  = JSON.parse(episodesArray)
+                                for (let serieEpisode of episodeObject){
+                                    let episode = serieEpisode.comment.split('Serija')[0]
+                                    let movLink = serieEpisode.file.replace('//', 'https://')
+                                    console.log(movLink)
+                                    let upload = await new Promise(async (resolve) =>{
+                                        try {
+                                            console.log('checking if serie episode is not duplicate')
+                                            let check_is_not_dup = await checkSerieIsNotDuplicate(contentTitle, episode)
+                                            if(check_is_not_dup){
+                                                console.log('uploading phase')
+                                                pb2 = 'NAN'
+                                                console.log('uploading to server 1')
+                                                pb1 = await upload_neto_server(movLink)
+                                                if(pb1 == false){
+                                                    console.log('upload process stopped could not upload to neto server')
+                                                    resolve()
+                                                }else{
+                                                    console.log('server 1 uploaded')
+                                                    console.log('uploading to server 3')
+                                                    resolve()
+                                                    console.log('starting new scrape while awaiting sb upload')
+                                                    p1 = await upload_streamsb_server(movLink)
+                                                    if(p1 == false){
+                                                        console.log('upload process stopped could not upload to netu')
+                                                        resolve()
+                                                    }else{
+                                                        console.log('server 3 uploaded')
+                                                        console.log('uploading movie to ziuri')
+                                                        const upload_serie = await  insertSerieData(imdb_id, p1, pb1, pb2, contentTitle, episode, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage)
+                                                        console.log(upload_serie)
+                                                        resolve(upload_serie)
+                                                    }
+                                                }
+                                            }else{
+                                                resolve()
+                                                console.log('dup content')
+                                            } 
+                                        } catch (error) {
+                                            resolve('script error in process')
+                                        }
+                                    })
+                                }
+                            } catch (error) {
+                                console.log('could not grab series episode')
+                            }
+                        }else{
+                            console.log('cloudfare blocking image page reconnecting or imgPage is undefined...')
+                            if(loadingTimout > 40){
+                                await page2.reload({ waitUntil: ["networkidle2"]})
+                                loadingTimout = 0
+                            }
+                        }
+                    }else{
+                        console.log('wrong imgage detected getting right one')
+                    }
+                } 
+                
+            }, 2000);
+        }else{
+            console.log('upload process stopped could not get scrape data') 
+            resolve()
+        }
+    }else{
+        if(loadingTimout > 80){
+            await page.reload({ waitUntil: ["networkidle2"]})
+            loadingTimout = 0
+        }
+    }
+}, 2000);
+}
+
+
+module.exports = { startSerieCrawler }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

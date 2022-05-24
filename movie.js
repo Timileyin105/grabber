@@ -2,10 +2,8 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { upload_neto_server } = require ('./neto-server-upload')
-const { upload_streamtape_server } = require ('./streamtape-server-upload')
 const { upload_streamsb_server } = require('./streamsb-server-upload')
 const { insertData, checkIsNotDuplicate } = require('./insert-data')
-const { googleTranslator } = require('translators');
 const imdb = require('imdb-api')
 puppeteer.use(StealthPlugin());
 const env = require('dotenv')
@@ -13,6 +11,7 @@ env.config({ path: './.env'})
 
 async function scrapPage(browser, viewport, url, resolve){
   var contentTitle
+  var contentTitleEng
   var contentDescription
   var contentImage
   var contentLanguage
@@ -62,10 +61,14 @@ var intv = setInterval(async () => {
     clearInterval(intv)
     loadingTimout = 0
     console.log('Cloudfare DDoS protection successfully bypassed')
-    
+   
     contentTitle  = await page.evaluate(()=>{
       return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > h1").textContent
-    }).catch((e)=>{ console.log('cannot read title') })    
+    }).catch((e)=>{ console.log('cannot read title') })   
+    
+    contentTitleEng  = await page.evaluate(()=>{
+      return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > div").textContent
+    }).catch((e)=>{ console.log('cannot read eng title') })    
     
     contentDescription = await page.evaluate(()=>{
       return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
@@ -85,7 +88,7 @@ var intv = setInterval(async () => {
       let cnArr =  cn.split(':')
       return cnArr[1]
     }).catch((e)=>{ console.log('could not get year') })
-
+    
     contentGenre = await page.$$eval('.short-info', async (el)=>{
       let elem =  el.find(e => e.textContent.includes('Žanras'))
       let cn =  elem.textContent
@@ -99,7 +102,7 @@ var intv = setInterval(async () => {
       let cnArr =  cn.split(':')
       return cnArr[1]
     }).catch((e)=>{ console.log('could not get genre') })
-
+    
     contentRating = await page.$$eval('.short-info', async (el)=>{
       let elem =  el.find(e => e.textContent.includes('IMDB'))
       let cn =  elem.textContent
@@ -156,7 +159,6 @@ var intv = setInterval(async () => {
               
               console.log('site datas scraped')
               console.log('getting imdb info')
-              let contentTitleEng = await googleTranslator(contentTitle, 'lt', 'en').catch((e)=> console.log('tranlation error probably empty text passed'))
               let rq =  await imdb.get({name: contentTitleEng}, {apiKey: process.env.IMDB_ID, timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
               if(rq == undefined){
                 imdb_id = 'not found'
@@ -223,7 +225,7 @@ var intv = setInterval(async () => {
 }, 2000);
 }
 
-const startCrawller = async()=>{
+const startMovieCrawler = async(url)=>{
   const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
   const crawler = await browser.newPage();
   await crawler.setUserAgent('Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
@@ -252,7 +254,7 @@ const viewport = {
 }
 await crawler.setViewport(viewport);
 await crawler.setCookie(...cookie)
-await crawler.goto('https://filmux.info/filmai/', { waitUntil: 'networkidle2' })
+await crawler.goto(url, { waitUntil: 'networkidle2' })
 crawler.waitForNavigation({ waitUntil: 'networkidle2' })
 
 var loadingTimout = 0
@@ -273,11 +275,11 @@ var intv = setInterval(async()=>{
     clearInterval(lintv)
     console.log('Cloudfare DDoS protection successfully bypassed')
     for (let link of movieLink){
-        let upload = await new Promise(async (resolve) =>{
+      let upload = await new Promise(async (resolve) =>{
         try {
-            await scrapPage(browser, viewport, link, resolve)
+          await scrapPage(browser, viewport, link, resolve)
         } catch (error) {
-             resolve('script error in process')
+          resolve('script error in process')
         }
       })
     }
@@ -291,6 +293,9 @@ var intv = setInterval(async()=>{
 }, 2000)
 
 }
+
+
+module.exports = { startMovieCrawler }
 
 
 
