@@ -82,6 +82,8 @@ var intv = setInterval(async () => {
         contentDescription = await page.evaluate(()=>{
             return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
         }).catch((e)=>{ console.log('could not get description') })
+
+        contentDescription = contentDescription.replace('"', '').replace("'", "")
         
         
         contentLanguage = await page.evaluate(()=>{

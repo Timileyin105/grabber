@@ -2,9 +2,9 @@
   "name": "ziuri-grabber",
   "version": "1.0.0",
   "description": "ziuri backned built by oluwayomi timileyin",
-  "main": "nodemon index.js",
+  "main": "node index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",

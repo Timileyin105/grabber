@@ -18,7 +18,8 @@ const upload_neto_server = (link) => {
                         console.log('unable to get video id of uploaded video to neto')
                         resolve(false)
                     }else{
-                        delete_upload_from_queue(upload)
+                        let del = await delete_upload_from_queue(upload)
+                        console.log(del)
                         resolve(video_id)
                         // embed_link = await neto_get_embed(video_id)
                         // if(embed_link == false){
@@ -64,8 +65,8 @@ const neto_remote_upload = async (link) =>{
 const delete_upload_from_queue = async (upload_id)=>{
     
     let key = 'da4b99461a0fc9bf0948baddbeb54221'
-    let rq = await  axios.get(`https://netu.tv/api/file/delete_remotedl?key=${key}&id=${upload_id}`).catch((err) => console.log('error request to netu'))
-
+    let rq = await  axios.get(`https://netu.tv/api/file/delete_remotedl?key=da4b99461a0fc9bf0948baddbeb54221&id=${upload_id}`).catch((err) => console.log('error request to netu'))
+    return rq.data
 }
 
 const neto_get_video_id = async(id)=>{

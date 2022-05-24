@@ -74,6 +74,7 @@ var intv = setInterval(async () => {
       return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
     }).catch((e)=>{ console.log('could not get description') })
     
+    contentDescription = contentDescription.replace('"', '').replace("'", "")
     
     contentLanguage = await page.evaluate(()=>{
       let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(7)").textContent

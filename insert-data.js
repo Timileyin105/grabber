@@ -19,7 +19,7 @@ const insertData = async (imdb_id, p1, pb1, pb2, title, movie_description, movie
             }
 
         } catch (error) { 
-            resolve('error checking if content exist: proccess..failed')
+            resolve('error uploading movie to zuiri')
         }
     })
 }
