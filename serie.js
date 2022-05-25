@@ -223,6 +223,8 @@ var intv = setInterval(async () => {
                                         }
                                     })
                                 }
+                                browser.close()
+                                process.exit()
                             } catch (error) {
                                 console.log('could not grab series episode')
                             }

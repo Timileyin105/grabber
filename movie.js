@@ -284,6 +284,8 @@ var intv = setInterval(async()=>{
         }
       })
     }
+    browser.close()
+    process.exit()
   }else{
     console.log('cloudfare blocking connection: reconnecting....', loadingTimout)
     if(loadingTimout > 150){
