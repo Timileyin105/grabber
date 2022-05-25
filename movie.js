@@ -182,8 +182,6 @@ var intv = setInterval(async () => {
                 }else{
                   console.log('server 1 uploaded')
                   console.log('uploading to server 3')
-                  resolve()
-                  console.log('starting new scrape while awaiting sb upload')
                   p1 = await upload_streamsb_server(movLink)
                   if(p1 == false){
                     console.log('upload process stopped could not upload to netu')
@@ -191,7 +189,7 @@ var intv = setInterval(async () => {
                   }else{
                     console.log('server 3 uploaded')
                     console.log('uploading movie to ziuri')
-                    const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage)
+                    const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage, contentTitleEng)
                     console.log(upload_movie)
                     resolve(upload_movie)
                   }

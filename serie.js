@@ -9,7 +9,7 @@ puppeteer.use(StealthPlugin())
 const env = require('dotenv')
 env.config({ path: './.env'})
 
-async function startSerieCrawler(url){
+async function scrapSeriePage(browser, viewport, link, mainresolve){
     var contentTitle
     var contentTitleEng
     var contentDescription
@@ -24,15 +24,8 @@ async function startSerieCrawler(url){
     var pb1
     var imdb_id
     
-    const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
-    const viewport = {
-        width: 1920 + Math.floor(Math.random() * 100),
-        height: 3000 + Math.floor(Math.random() * 100),
-        deviceScaleFactor: 1,
-        hasTouch: false,
-        isLandscape: false,
-        isMobile: false,
-    }
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (contentCountryWindows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
     var cookie = [ // cookie exported by google chrome plugin editthiscookie
     {
         "domain": "filmux.info",
@@ -48,13 +41,12 @@ async function startSerieCrawler(url){
         "id": 1
     }
 ] 
-
-const page = await browser.newPage();
-await page.setUserAgent('Mozilla/5.0 (contentCountryWindows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
 await page.setViewport(viewport);
 await page.setCookie(...cookie)
-await page.goto(url,{ waitUntil: 'networkidle2' });  
+await page.goto(link, { waitUntil: 'networkidle2' });  
 page.waitForNavigation({ waitUntil: 'networkidle0' })
+
+
 var loadingTimout = 0
 var intv = setInterval(async () => {
     loadingTimout ++ 
@@ -74,15 +66,15 @@ var intv = setInterval(async () => {
         contentTitle  = await page.evaluate(()=>{
             return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > h1").textContent
         }).catch((e)=>{ console.log('cannot read title') })    
-
+        
         contentTitleEng  = await page.evaluate(()=>{
             return  document.querySelector("#dle-content > div > div.short-top.fx-row > div.short-top-left.fx-1 > div").textContent
-          }).catch((e)=>{ console.log('cannot read eng title') })    
+        }).catch((e)=>{ console.log('cannot read eng title') })    
         
         contentDescription = await page.evaluate(()=>{
             return  document.querySelector("#dle-content > div > div.mtext.full-text.video-box.clearfix").textContent
         }).catch((e)=>{ console.log('could not get description') })
-
+        
         contentDescription = contentDescription.replace('"', '').replace("'", "")
         
         
@@ -162,9 +154,9 @@ var intv = setInterval(async () => {
                                 contentYear = rq.year
                                 console.log('imdb data scrapped')
                             }
-
+                            
                             console.log('site datas scraped')
-                           
+                            
                             let episodesArray = await page.evaluate(async ()=>{
                                 var sc
                                 await $("script").each(function(){ 
@@ -184,7 +176,7 @@ var intv = setInterval(async () => {
                                 for (let serieEpisode of episodeObject){
                                     let episode = serieEpisode.comment.split('Serija')[0]
                                     let movLink = serieEpisode.file.replace('//', 'https://')
-                                    console.log(movLink)
+                                    movLink = encodeURIComponent(movLink)
                                     let upload = await new Promise(async (resolve) =>{
                                         try {
                                             console.log('checking if serie episode is not duplicate')
@@ -209,7 +201,7 @@ var intv = setInterval(async () => {
                                                     }else{
                                                         console.log('server 3 uploaded')
                                                         console.log('uploading movie to ziuri')
-                                                        const upload_serie = await  insertSerieData(imdb_id, p1, pb1, pb2, contentTitle, episode, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage)
+                                                        const upload_serie = await  insertSerieData(imdb_id, p1, pb1, pb2, contentTitle, episode, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage, contentTitleEng)
                                                         console.log(upload_serie)
                                                         resolve(upload_serie)
                                                     }
@@ -223,8 +215,7 @@ var intv = setInterval(async () => {
                                         }
                                     })
                                 }
-                                browser.close()
-                                process.exit()
+                               mainresolve()
                             } catch (error) {
                                 console.log('could not grab series episode')
                             }
@@ -252,6 +243,80 @@ var intv = setInterval(async () => {
         }
     }
 }, 2000);
+
+}
+
+
+
+const startSerieCrawler = async(url)=>{
+    const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
+    const crawler = await browser.newPage();
+    await crawler.setUserAgent('Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
+    var cookie = [ // cookie exported by google chrome plugin editthiscookie
+    {
+        "domain": "filmux.info",
+        "hostOnly": false,
+        "httpOnly": true,
+        "name": "PHPSESSID",
+        "path": "/",
+        "sameSite": "no_restriction",
+        "secure": false,
+        "session": false,
+        "storeId": "0",
+        "value": "ac5c1spa7qclfh3ri3lgv682u5",
+        "id": 1
+    }
+]
+const viewport = {
+    width: 1920 + Math.floor(Math.random() * 100),
+    height: 3000 + Math.floor(Math.random() * 100),
+    deviceScaleFactor: 1,
+    hasTouch: false,
+    isLandscape: false,
+    isMobile: false,
+}
+await crawler.setViewport(viewport);
+await crawler.setCookie(...cookie)
+await crawler.goto(url, { waitUntil: 'networkidle2' })
+crawler.waitForNavigation({ waitUntil: 'networkidle2' })
+
+var loadingTimout = 0
+let lintv = setInterval(()=> loadingTimout ++, 1000)
+
+var serieLink = []
+var intv = setInterval(async()=>{
+    
+    let pgLoadTest = await crawler.$$eval('a.short-img', (el)=>{
+        return el.map(el => el.href);
+    }).catch(er => console.log('error injecting scrap test probably a navigation going on: re injecting...'))
+    
+    if(pgLoadTest != undefined || pgLoadTest != null ) serieLink = pgLoadTest
+    
+    if(serieLink.length != 0){
+        
+        clearInterval(intv)
+        clearInterval(lintv)
+        console.log('Cloudfare DDoS protection successfully bypassed')
+        for (let link of serieLink){
+            let upload = await new Promise(async (mainresolve) =>{
+                try {
+                    await scrapSeriePage(browser, viewport, link, mainresolve)
+                } catch (error) {
+                    resolve('script error in process')
+                }
+            })
+        }
+        browser.close()
+        process.exit()
+    }else{
+        console.log('cloudfare blocking connection: reconnecting....', loadingTimout)
+        if(loadingTimout > 150){
+            await crawler.reload({ waitUntil: ["networkidle2"]})
+            loadingTimout = 0
+        }
+    }
+}, 2000)
+
 }
 
 
