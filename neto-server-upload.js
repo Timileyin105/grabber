@@ -88,13 +88,15 @@ const neto_get_video_id = async(id)=>{
                             }
                         }
                     }else{
-                        if(timer >= 24){
+                        console.log('awaiting to get uploaded video to neto file code retrying..')
+                        if(timer > 24){
                             timer = 0
                             resolve(false)
                         }
                     }
                 } catch (error) {
-                    console.log('awaiting to get uploaded video to neto file code retrying..')
+                    console.log('netu upload err')
+                    resolve(false)
                 }
             }, 5000);
        } catch (error) {
