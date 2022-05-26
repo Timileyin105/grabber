@@ -72,7 +72,7 @@ const delete_upload_from_queue = async (upload_id)=>{
 const neto_get_video_id = async(id)=>{
    return new Promise(async (resolve, reject) => {
        try {
-            let timer = 0
+            var timer = 0
             var intv = setInterval(async () => {
                 timer ++
                 let key = 'da4b99461a0fc9bf0948baddbeb54221'
@@ -87,14 +87,14 @@ const neto_get_video_id = async(id)=>{
                                 resolve(file_code)
                             }
                         }
+                    }else{
+                        if(timer >= 24){
+                            timer = 0
+                            resolve(false)
+                        }
                     }
                 } catch (error) {
-                    if(timer >= 24){
-                        console.log('upload time timed out probably upload error')
-                        resolve(false)
-                    }else{
-                        console.log('awaiting to get uploaded video to neto file code retrying..')
-                    }
+                    console.log('awaiting to get uploaded video to neto file code retrying..')
                 }
             }, 5000);
        } catch (error) {
