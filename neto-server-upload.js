@@ -72,7 +72,9 @@ const delete_upload_from_queue = async (upload_id)=>{
 const neto_get_video_id = async(id)=>{
    return new Promise(async (resolve, reject) => {
        try {
+            let timer = 0
             var intv = setInterval(async () => {
+                timer ++
                 let key = 'da4b99461a0fc9bf0948baddbeb54221'
                 let rq = await  axios.get(`https://netu.tv/api/file/status_remotedl?key=${key}&id=${id}`).catch((err) => console.log('error request to neto'))
                 try {
@@ -87,7 +89,12 @@ const neto_get_video_id = async(id)=>{
                         }
                     }
                 } catch (error) {
-                    console.log('awaiting to get uploaded video to neto file code retrying..')
+                    if(timer >= 24){
+                        console.log('upload time timed out probably upload error')
+                        resolve(false)
+                    }else{
+                        console.log('awaiting to get uploaded video to neto file code retrying..')
+                    }
                 }
             }, 5000);
        } catch (error) {

@@ -224,7 +224,7 @@ var intv = setInterval(async () => {
 }, 2000);
 }
 
-const startMovieCrawler = async(url)=>{
+const startMovieCrawlerProcess = async(url, mainResolve)=>{
   const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
   const crawler = await browser.newPage();
   await crawler.setUserAgent('Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0')
@@ -282,8 +282,8 @@ var intv = setInterval(async()=>{
         }
       })
     }
-    browser.close()
-    process.exit()
+    await browser.close()
+    mainResolve()
   }else{
     console.log('cloudfare blocking connection: reconnecting....', loadingTimout)
     if(loadingTimout > 150){
@@ -295,6 +295,14 @@ var intv = setInterval(async()=>{
 
 }
 
+const startMovieCrawler = async (num)=>{ 
+    for(let count  =  num; count >= 1; count --){
+         let scrapPg = await new Promise(async (mainResolve)=>{
+          let url = `https://filmux.info/filmai/page/` + count
+             startMovieCrawlerProcess(url, mainResolve)
+         })
+    }
+}
 
 module.exports = { startMovieCrawler }
 
