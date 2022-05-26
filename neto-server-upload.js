@@ -3,6 +3,12 @@ const { default: axios } = require("axios")
 const upload_neto_server = (link) => {
    return new Promise(async (resolve, reject) => {
         try {
+            var is_responeded = false
+             setTimeout(() => {
+                 if(is_responeded == false){
+                      resolve(false)
+                 }
+            }, 180000);
             var upload, video_id, embed_link
             if(link == '' || link == undefined){
                 console.log('empty link passed to neto server')
@@ -20,6 +26,7 @@ const upload_neto_server = (link) => {
                     }else{
                         let del = await delete_upload_from_queue(upload)
                         console.log(del)
+                        is_responeded = true
                         resolve(video_id)
                         // embed_link = await neto_get_embed(video_id)
                         // if(embed_link == false){
@@ -72,9 +79,8 @@ const delete_upload_from_queue = async (upload_id)=>{
 const neto_get_video_id = async(id)=>{
    return new Promise(async (resolve, reject) => {
        try {
-            var timer = 0
+         
             var intv = setInterval(async () => {
-                timer ++
                 let key = 'da4b99461a0fc9bf0948baddbeb54221'
                 let rq = await  axios.get(`https://netu.tv/api/file/status_remotedl?key=${key}&id=${id}`).catch((err) => console.log('error request to neto'))
                 try {
@@ -89,14 +95,10 @@ const neto_get_video_id = async(id)=>{
                         }
                     }else{
                         console.log('awaiting to get uploaded video to neto file code retrying..')
-                        if(timer > 24){
-                            timer = 0
-                            resolve(false)
-                        }
                     }
                 } catch (error) {
-                    console.log('netu upload err')
                     resolve(false)
+                    console.log('upload script err')
                 }
             }, 5000);
        } catch (error) {
