@@ -11,7 +11,9 @@ const insertData = async (imdb_id, p1, pb1, pb2, title, movie_description, movie
                     method: "post",
                     url:"https://ziuri.xyz/grabber/upload-movie",
                     data: { imdb_id: imdb_id, p1 : p1, pb1 : pb1, pb2 : pb2, title : title, movie_description : movie_description, movie_image_link : movie_image_link, movie_category : movie_category, movie_ratings: movie_ratings, movie_country: movie_country, movie_year : movie_year, movie_sub: movie_sub , eng_title: eng_title },
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json" },
+                    maxContentLength: Infinity,
+                    maxBodyLength: Infinity
                 })
 
                 let response = rq.data.resp

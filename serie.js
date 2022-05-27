@@ -78,11 +78,13 @@ var intv = setInterval(async () => {
         contentDescription = contentDescription.replace('"', '').replace("'", "")
         
         
-        contentLanguage = await page.evaluate(()=>{
-            let cn =  document.querySelector("#dle-content > div > div.mcols.fx-row > div.mright.fx-1 > div:nth-child(7)").textContent
+        contentLanguage = await page.$$eval('.short-info', async (el)=>{
+            let elem =  el.find(e => e.textContent.includes('Kalba'))
+            let cn =  elem.textContent
             let cnArr =  cn.split(':')
             return cnArr[1]
-        }).catch((e)=>{ console.log('coulsd not get language') })
+        }).catch((e)=>{ console.log('could not get year') })
+        
         
         
         contentYear = await page.$$eval('.short-info', async (el)=>{
@@ -192,8 +194,6 @@ var intv = setInterval(async () => {
                                                 }else{
                                                     console.log('server 1 uploaded')
                                                     console.log('uploading to server 3')
-                                                    resolve()
-                                                    console.log('starting new scrape while awaiting sb upload')
                                                     p1 = await upload_streamsb_server(movLink)
                                                     if(p1 == false){
                                                         console.log('upload process stopped could not upload to netu')
