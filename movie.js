@@ -75,14 +75,13 @@ var intv = setInterval(async () => {
     }).catch((e)=>{ console.log('could not get description') })
     
     contentDescription = contentDescription.replace('"', '').replace("'", "")
-    
+  
     contentLanguage = await page.$$eval('.short-info', async (el)=>{
       let elem =  el.find(e => e.textContent.includes('Kalba'))
       let cn =  elem.textContent
       let cnArr =  cn.split(':')
       return cnArr[1]
   }).catch((e)=>{ console.log('could not get language') })
-    
     
     contentYear = await page.$$eval('.short-info', async (el)=>{
       let elem =  el.find(e => e.textContent.includes('Metai'))

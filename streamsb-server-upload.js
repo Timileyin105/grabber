@@ -52,27 +52,27 @@ const streamsb_remote_upload = async (link) =>{
    })
 }
 
-// const streamsb_get_video_id = async(id)=>{
-//    return new Promise(async (resolve, reject) => {
-//         try {
-//             var intv = setInterval(async () => {
-//                 let key = process.env.STREAMSB_API_KEY
-//                 let rq = await  axios.get(`https://api.streamsb.com/api/file/direct?key=${key}&file_code=${id}`).catch((err) => console.log('error request to streamsb'))
-//                 try {
-//                     if(rq.data.result.n.url){
-//                         clearInterval(intv)
-//                         let video_link = rq.data.result.n.url
-//                         resolve(video_link)
-//                     }
-//                 } catch (error) {
-//                    console.log('awaiting to get uploaded video embed url to streamsb  retrying..')
-//                 }
-//            }, 5000);
-//         } catch (error) {
-//             console.log('catch error during upload to streamsb process 3')
-//             resolve(false)
-//        }
-//    })
-// }
+const streamsb_get_video_id = async(id)=>{
+   return new Promise(async (resolve, reject) => {
+        try {
+            var intv = setInterval(async () => {
+                let key = process.env.STREAMSB_API_KEY
+                let rq = await  axios.get(`https://api.streamsb.com/api/file/direct?key=${key}&file_code=${id}`).catch((err) => console.log('error request to streamsb'))
+                try {
+                    if(rq.data.result.n.url){
+                        clearInterval(intv)
+                        let video_link = rq.data.result.n.url
+                        resolve(video_link)
+                    }
+                } catch (error) {
+                   console.log('awaiting to get uploaded video embed url to streamsb  retrying..')
+                }
+           }, 5000);
+        } catch (error) {
+            console.log('catch error during upload to streamsb process 3')
+            resolve(false)
+       }
+   })
+}
 
 module.exports = { upload_streamsb_server }

@@ -21,7 +21,7 @@ const insertData = async (imdb_id, p1, pb1, pb2, title, movie_description, movie
             }
 
         } catch (error) { 
-            resolve('error uploading content from grabber: proccess..failed')
+            resolve(error)
         }
     })
 }
@@ -94,6 +94,5 @@ const checkSerieIsNotDuplicate =  async (title, episode)=>{
         }
     })
 }
-
 
 module.exports = { insertData, checkIsNotDuplicate, checkSerieIsNotDuplicate, insertSerieData }

@@ -108,27 +108,27 @@ const neto_get_video_id = async(id)=>{
    })
 }
 
-// const neto_get_embed  = async (video_id)=>{
-//     return new Promise(async (resolve, reject) => {
-//         try {
-//             let key = 'da4b99461a0fc9bf0948baddbeb54221'
-//             let rq = await  axios.get(`https://netu.tv/api/file/embed?key=${key}&file_code=${video_id}`).catch((err) => console.log('error request to netu'))
-//             try {
-//                 if(rq.data.result){
-//                     let raw = rq.data.result
-//                     for (var i in raw){
-//                         let embed_link = raw[i].embed_link
-//                         resolve(embed_link)
-//                     }
-//                 }
-//             } catch (error) {
-//                 resolve(false)
-//             }
-//         } catch (error) {
-//             console.log('catch error during upload to neto process 4')
-//             resolve(false)
-//         }
-//     })
-// }
+const neto_get_embed  = async (video_id)=>{
+    return new Promise(async (resolve, reject) => {
+        try {
+            let key = 'da4b99461a0fc9bf0948baddbeb54221'
+            let rq = await  axios.get(`https://netu.tv/api/file/embed?key=${key}&file_code=${video_id}`).catch((err) => console.log('error request to netu'))
+            try {
+                if(rq.data.result){
+                    let raw = rq.data.result
+                    for (var i in raw){
+                        let embed_link = raw[i].embed_link
+                        resolve(embed_link)
+                    }
+                }
+            } catch (error) {
+                resolve(false)
+            }
+        } catch (error) {
+            console.log('catch error during upload to neto process 4')
+            resolve(false)
+        }
+    })
+}
 
 module.exports = { upload_neto_server }
