@@ -36,7 +36,9 @@ const insertSerieData = async (imdb_id, p1, pb1, pb2, title, episode, serie_desc
                     method: "post",
                     url:"https://ziuri.xyz/grabber/upload-serie",
                     data: { imdb_id: imdb_id,  p1 : p1, pb1 : pb1, pb2 : pb2, title : title, episode: episode , serie_description : serie_description, serie_image_link : serie_image_link, serie_category : serie_category, serie_ratings: serie_ratings, serie_country: serie_country, serie_year : serie_year, serie_sub: serie_sub, eng_title: eng_title },
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json" },
+                    maxContentLength: Infinity,
+                    maxBodyLength: Infinity
                 })
 
                 let response = rq.data.resp
