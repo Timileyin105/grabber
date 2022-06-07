@@ -75,13 +75,14 @@ var intv = setInterval(async () => {
     }).catch((e)=>{ console.log('could not get description') })
     
     contentDescription = contentDescription.replace('"', '').replace("'", "")
-  
+    
     contentLanguage = await page.$$eval('.short-info', async (el)=>{
       let elem =  el.find(e => e.textContent.includes('Kalba'))
       let cn =  elem.textContent
       let cnArr =  cn.split(':')
       return cnArr[1]
   }).catch((e)=>{ console.log('could not get language') })
+    
     
     contentYear = await page.$$eval('.short-info', async (el)=>{
       let elem =  el.find(e => e.textContent.includes('Metai'))
@@ -156,72 +157,55 @@ var intv = setInterval(async () => {
                 return sc
               }).catch((e)=>{ console.log('could not get page script') })
               
-              if(movLink == undefined){
-                movLink = await page.evaluate(async ()=>{
-                  var sc
-                  await $("iframe").each(function(){ 
-                    var rw = $(this).attr('src')
-                    if(rw.includes('kinas.tv')){
-                      sc = rw
-                    }
-                  })
-                  return sc
-                }).catch((e)=>{ console.log('could not get page script') })
-              }
-
-              if(movLink != undefined) {
-                movLink = encodeURIComponent('https://' + movLink)
+              movLink = encodeURIComponent('https://' + movLink)
               
-                  console.log('site datas scraped')
-                  console.log('getting imdb info')
-                  let rq =  await imdb.get({name: contentTitleEng}, {apiKey: process.env.IMDB_ID, timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
-                  if(rq == undefined){
-                    imdb_id = 'not found'
-                  }else{
-                    console.log('successfully gotten imdb data')
-                    imdb_id = rq.imdbid
-                    contentRating = rq.rating
-                    contentYear = rq.year
-                    console.log('imdb data scrapped')
-                  }
-                  console.log('checking if file if movie is not duplicate')
-                  let check_is_not_dup = await checkIsNotDuplicate(contentTitle)
-                  if(check_is_not_dup){
-                    pb2 = 'NAN'
-                    console.log('uploading to server 1')
-                    pb1 = await upload_neto_server(movLink)
-                    if(pb1 == false){
-                      console.log('upload process stopped could not upload to neto server')
-                      resolve()
-                    }else{
-                      console.log('server 1 uploaded')
-                      console.log('uploading to server 3')
-                      p1 = await upload_streamsb_server(movLink)
-                      if(p1 == false){
-                        console.log('upload process stopped could not upload to netu')
-                        resolve()
-                      }else{
-                        console.log('server 3 uploaded')
-                        console.log('uploading movie to ziuri')
-                        const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage, contentTitleEng)
-                        console.log(upload_movie)
-                        resolve(upload_movie)
-                      }
-                    }
-                  }else{
-                    resolve()
-                    console.log('dup content')
-                  } 
+              console.log('site datas scraped')
+              console.log('getting imdb info')
+              let rq =  await imdb.get({name: contentTitleEng}, {apiKey: process.env.IMDB_ID, timeout: 30000}).catch((e)=>{ console.log('IMDB data not found') })
+              if(rq == undefined){
+                imdb_id = 'not found'
               }else{
-                  console.log('cloudfare blocking image page reconnecting or imgPage is undefined...')
-                  if(loadingTimout > 40){
-                    await page2.reload({ waitUntil: ["networkidle2"]})
-                    loadingTimout = 0
+                console.log('successfully gotten imdb data')
+                imdb_id = rq.imdbid
+                contentRating = rq.rating
+                contentYear = rq.year
+                console.log('imdb data scrapped')
+              }
+              console.log('checking if file if movie is not duplicate')
+              let check_is_not_dup = await checkIsNotDuplicate(contentTitle)
+              if(check_is_not_dup){
+                pb2 = 'NAN'
+                console.log('uploading to server 1')
+                pb1 = await upload_neto_server(movLink)
+                if(pb1 == false){
+                  console.log('upload process stopped could not upload to neto server')
+                  resolve()
+                }else{
+                  console.log('server 1 uploaded')
+                  console.log('uploading to server 3')
+                  p1 = await upload_streamsb_server(movLink)
+                  if(p1 == false){
+                    console.log('upload process stopped could not upload to netu')
+                    resolve()
+                  }else{
+                    console.log('server 3 uploaded')
+                    console.log('uploading movie to ziuri')
+                    const upload_movie = await  insertData(imdb_id, p1, pb1, pb2, contentTitle, contentDescription, contentImage, contentGenre, contentRating, contentCountry, contentYear, contentLanguage, contentTitleEng)
+                    console.log(upload_movie)
+                    resolve(upload_movie)
                   }
                 }
               }else{
-                resolve('could not get movie link')
+                resolve()
+                console.log('dup content')
               } 
+            }else{
+              console.log('cloudfare blocking image page reconnecting or imgPage is undefined...')
+              if(loadingTimout > 40){
+                await page2.reload({ waitUntil: ["networkidle2"]})
+                loadingTimout = 0
+              }
+            }
           }else{
             console.log('wrong imgage detected getting right one')
           }
@@ -322,7 +306,6 @@ const startMovieCrawler = async (num)=>{
 }
 
 module.exports = { startMovieCrawler }
-
 
 
 
