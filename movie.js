@@ -212,7 +212,7 @@ var intv = setInterval(async () => {
                     resolve()
                     console.log('dup content')
                   } 
-                }else{
+              }else{
                   console.log('cloudfare blocking image page reconnecting or imgPage is undefined...')
                   if(loadingTimout > 40){
                     await page2.reload({ waitUntil: ["networkidle2"]})
